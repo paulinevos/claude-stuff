@@ -10,6 +10,11 @@ This skill describes best practices for version control using Git. Use this skil
 **Description:** Compare commits on the current and base branches using `git log`, and take note of commits that look duplicated on either branch. Then run an interactive rebase onto the base branch using `git rebase -i`. The swap file for interactive commits will be opened. Remove lines for any commits that look like duplicates. 
 **Usage:** `/rebase [base-branch]`
 
+### amend
+**Trigger:** When a change can be added to the last commit.
+**Description:** When an unstaged change logically belongs the the latest commit, it can be amended to that commit by running `git commit --am`. You may also change the commit message to better reflect the resulting committed changes.
+**Usage:** `/amend`
+
 ### resolve-merge-conflict
 **Trigger:** When a merge conflict arises
 **Description:** Attempt to consolidate the conflicting changes. Always show the proposed resolution and ask for confirmation. If the user wants to keep their own changes instead, run `git add [file-path] --theirs`. Conversely, run `git add [file-path] --ours` when they want to keep the incoming changes. After resolving all conflicts, continue whatever was running (i.e. `git rebase --continue` or `git cherry-pick --continue`)
@@ -46,6 +51,21 @@ When all unstaged changes have been recorded in fixup commits, ask the user if t
 **Trigger:** When the user requests to undo an operation like merge, rebase, reset, amend.
 **Description:** Use `git reflog` to guess the operation described by the user. Then use `git checkout HEAD~{%d}` to the next operation on the list (before the described operation). Ask the user if this is the expected outcome. If so, `git checkout [current-branch]` and `git reset --hard HEAD{%d}` to reset the state of the branch to the expected state.
 **Usage:** `/undo [current-branch, description]`
+
+### debug
+**Trigger:** A user asks to debug a regression (behavior that worked before, but is broken now).
+**Description:** Use bisect to find and fix the commmit that introduced the described regression. 
+
+Steps:
+
+1. Investigate if the regression is covered by a test. If it is (which means it fails), `git checkout` the commit that introduced the test, and check if it passed there. If so, take note of the commit ID ([good-commit]). If not, try to find a subsequent commit that has the test pass.
+2. If the regression is not covered by a test, create a (failing) regression test for it and commit it. Try to find the commit that introduced the original behavior, and run `git rebase -i [commit-id]`. Move the commit holding the regression test to the top of the list of commits by cutting and pasting the line. Check that the test passes there. If so, take note of the commit ID ([good-commit])
+3. You should now have a [good-commit] and can run a bisect to find the offending commit. Run `git bisect start HEAD [good-commit]`. 
+4. Run `git bisect run [test-command]`. The output will show as `[bad-commit]` is the first bad commit.
+5. Move the regression test back to the `HEAD` using interactive rebase.
+6. Show and analyse bad commit, indicating what caused the bug and offering to fix it and making the regresion test pass.
+7. Amend the fix to the test commit, changing the commit message to describe the bug fix. Suggest to the user to create a bug fix.
+**Usage:** `/debug`
 
 ## Conventions
 
