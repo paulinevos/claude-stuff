@@ -1,0 +1,14 @@
+{
+  "name": "vos",
+  "owner": {
+    "name": "Pauline Vos",
+    "email": "pvos88@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "git-workflow",
+      "source": "./plugins/git-workflow",
+      "description": "Atomic-commit Git workflow skills: folding changes into the right commit (amend/edit/fixup), conflict resolution, reflog-based undo, and bisect debugging, plus shared conventions (rebase-over-merge, stashing, commit-message style)."
+    }
+  ]
+}
