@@ -12,33 +12,37 @@ instead of guessing.
 
 ## Steps
 
-1. **Get a reliable pass/fail signal.** Bisect is only as good as its test.
-   - If a test already covers the regression, run it — it should fail at `HEAD`.
-   - If nothing covers it, write a failing regression test that captures the bug
-     and commit it. You'll move this commit around, so keep it self-contained.
-2. **Find a known-good commit.** Check out candidates back in history and
-   confirm the behavior worked there (run the test; if the test commit didn't
-   exist yet, temporarily apply/cherry-pick it or move it there with an
-   interactive rebase). Note that commit id as `[good-commit]`.
+1. **Turn the bug into a pass/fail command.**
+   - If an existing test already covers it, use that — it should fail at `HEAD`.
+   - Otherwise write a throwaway check *outside* the repo, e.g.
+     `/tmp/bisect-check.sh`, that reproduces the bug and exits 0 when the
+     behavior is good and non-zero when it's bad. Keeping it outside the working
+     tree is the trick: it stays put across every checkout, so you never add it
+     to the repo or shuffle a test commit through history. `git bisect run`
+     executes it from the repo root, so reference repo files by their normal
+     paths (and include a build step if the project needs one).
+2. **Find a known-good commit.** Check out older commits and run the command
+   until it passes; note that commit as `[good-commit]`.
 3. **Run the bisect automatically:**
    ```
    git bisect start HEAD [good-commit]
-   git bisect run [test-command]
+   git bisect run bash /tmp/bisect-check.sh   # or the existing test command
    ```
-   `git bisect run` checks out midpoints and runs the command at each until it
-   reports `[bad-commit] is the first bad commit`. End with `git bisect reset`.
-4. **Analyze the culprit.** `git show [bad-commit]` — explain what in that commit
-   caused the regression.
-5. **Fix it atomically.** Offer to fix the bug so the regression test passes.
-   Once the test commit is back at `HEAD` (interactive rebase to move it if you
-   relocated it), fold the fix into the appropriate commit and reword its message
-   to describe the fix — or, if the culprit is already public history, make a new
-   bug-fix commit instead (see [conventions](../../references/conventions.md) on
-   not rewriting shared commits).
+   Git checks out midpoints and runs the command at each until it reports
+   `[bad-commit] is the first bad commit`. Finish with `git bisect reset` to
+   return to where you started.
+4. **Analyze the culprit.** `git show [bad-commit]` — explain what in it caused
+   the regression.
+5. **Fix it properly.** Suggest a new bug-fix commit that resolves the bug *and*
+   adds a proper regression test committed into the repo, so the behavior is
+   protected going forward (the throwaway `/tmp` script was only scaffolding —
+   discard it). Always a fresh commit, not a rewrite of the culprit: the culprit
+   is almost always already on shared history, which must not be rewritten (see
+   [conventions](../../references/conventions.md)). Follow the commit-message
+   conventions there.
 
 ## Why automate with `bisect run`
 
 Manually marking each midpoint good/bad is slow and error-prone. A scripted
-test command turns the whole search into one command and removes human mistakes
-from the bisection — you only think at the start (pick the test and good commit)
-and the end (fix the culprit).
+command turns the whole search into one step — you only think at the start (pick
+the check and the good commit) and the end (fix the culprit).
