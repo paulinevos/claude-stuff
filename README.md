@@ -17,8 +17,10 @@ Atomic-commit Git workflow skills, plus shared conventions.
 | `undo-op` | Undoing a merge, rebase, reset, or amend via the reflog |
 | `bisect-debug` | Finding and fixing the commit that caused a regression |
 
-Shared context lives in `plugins/git-workflow/references/conventions.md`
-(atomic-commit rules, commit-message style, stashing, rebase-over-merge).
+Shared conventions (atomic-commit rules, commit-message style, stashing,
+rebase-over-merge) live in
+`plugins/git-workflow/skills/maintain-atomic-commits/references/conventions.md`,
+bundled with that skill so they travel on install to any agent.
 
 **Install** — via `npx skills` (any supported agent):
 

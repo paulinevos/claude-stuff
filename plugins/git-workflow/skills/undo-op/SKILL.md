@@ -31,5 +31,5 @@ reflog entries persist for a while, even a "lost" commit after a bad rebase is
 usually still recoverable this way.
 
 Caution: `reset --hard` discards uncommitted changes. If there are any, stash
-them first (`git stash` — see the stashing note in
-[conventions](../../references/conventions.md)).
+them first with `git stash` (`-u` to include untracked files), then
+`git stash pop` after the reset.

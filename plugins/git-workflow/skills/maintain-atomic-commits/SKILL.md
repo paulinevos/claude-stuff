@@ -6,7 +6,7 @@ description: "Keep history as atomic commits by folding a change into the existi
 # maintain-atomic-commits
 
 When a change belongs to a commit that already exists, fold it in rather than
-leaving a "fix typo" follow-up (see [conventions](../../references/conventions.md)
+leaving a "fix typo" follow-up (see [conventions](references/conventions.md)
 for why). This skill picks the mechanism by *where* the change goes and *when*
 you made it.
 
@@ -14,7 +14,7 @@ you made it.
 
 List what's still local and safe to rewrite with `git log --oneline [base]..HEAD`.
 You MUST NOT rewrite a commit already on a shared branch (see
-[conventions](../../references/conventions.md)).
+[conventions](references/conventions.md)).
 
 Then route:
 

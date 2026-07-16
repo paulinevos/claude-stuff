@@ -36,10 +36,10 @@ instead of guessing.
 5. **Fix it properly.** Suggest a new bug-fix commit that resolves the bug *and*
    adds a proper regression test committed into the repo, so the behavior is
    protected going forward (the throwaway `/tmp` script was only scaffolding —
-   discard it). Always a fresh commit, not a rewrite of the culprit: the culprit
-   is almost always already on shared history, which must not be rewritten (see
-   [conventions](../../references/conventions.md)). Follow the commit-message
-   conventions there.
+   discard it). Always a fresh commit, never a rewrite of the culprit — it is
+   almost always already on shared history, which must not be rewritten (others
+   may have built on it). Write the fix commit with an imperative subject line
+   and a body explaining *why* the bug occurred, not how the diff works.
 
 ## Why automate with `bisect run`
 

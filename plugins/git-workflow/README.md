@@ -16,12 +16,15 @@ change by *where* it goes and *when* you make it — latest commit → `git comm
 changes already made (possibly across several commits) → `git commit --fixup` +
 autosquash.
 
-Shared context lives in `references/conventions.md` — atomic-commit rules,
-commit-message style, stashing to clear the tree, and preferring rebase over
-pull+merge. The skills link to it.
+Shared conventions — atomic-commit rules, commit-message style, stashing to
+clear the tree, and preferring rebase over pull+merge — live in
+`skills/maintain-atomic-commits/references/conventions.md`, bundled with that
+skill so they travel on install (including to non-Claude agents). The other
+skills inline the one or two rules they need, so each is self-contained.
 
 All rewrite operations respect one rule: never rewrite commits that already
-exist on a public branch (`main`, `develop`, …). See `references/conventions.md`.
+exist on a public branch (`main`, `develop`, …). See the bundled conventions
+above.
 
 ## Install
 
