@@ -25,9 +25,21 @@ exist on a public branch (`main`, `develop`, …). See `references/conventions.m
 
 ## Install
 
-Add this repo as a marketplace, then install the plugin:
+### Via `npx skills` (any supported agent)
+
+Install all skills, or pick individual ones:
+
+```sh
+npx skills add paulinevos/claude-stuff              # all four skills
+npx skills add paulinevos/claude-stuff --list       # preview without installing
+npx skills add paulinevos/claude-stuff -s bisect-debug   # a single skill
+```
+
+### Via Claude Code `/plugin`
+
+Add the marketplace, then install the plugin:
 
 ```
-/plugin marketplace add <this-repo>
+/plugin marketplace add paulinevos/claude-stuff
 /plugin install git-workflow@vos
 ```
