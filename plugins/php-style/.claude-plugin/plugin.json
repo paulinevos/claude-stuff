@@ -1,0 +1,9 @@
+{
+  "name": "php-style",
+  "version": "0.1.0",
+  "description": "PHP code conventions centred on object calisthenics: one level of indentation, no else, wrapped primitives, first-class collections, no train wrecks, no abbreviations, small entities, no getters or setters, plus the PHP specifics that support them.",
+  "author": {
+    "name": "Pauline Vos",
+    "email": "pauline.vos@mongodb.com"
+  }
+}

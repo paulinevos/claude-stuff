@@ -22,6 +22,14 @@ rebase-over-merge) live in
 `plugins/git-workflow/skills/maintain-atomic-commits/references/conventions.md`,
 bundled with that skill so they travel on install to any agent.
 
+### php-style
+
+PHP code conventions centred on object calisthenics.
+
+| Skill | Use when |
+| --- | --- |
+| [`php-object-calisthenics`](plugins/php-style/skills/php-object-calisthenics/SKILL.md) | Writing, refactoring or reviewing PHP — small edits, bug fixes, tests and scripts included |
+
 **Install** — via `npx skills` (any supported agent):
 
 ```sh
