@@ -14,6 +14,11 @@
       "name": "php-style",
       "source": "./plugins/php-style",
       "description": "PHP code conventions centred on object calisthenics: one level of indentation, no else, wrapped primitives, first-class collections, no train wrecks, no abbreviations, small entities, no getters or setters, plus the PHP specifics that support them."
+    },
+    {
+      "name": "jj-workflow",
+      "source": "./plugins/jj-workflow",
+      "description": "Jujutsu (jj) skills for agents working in parallel: one workspace and one bookmark per slice of work, granular revisions for reviewable PRs, stacked dependent slices, stale-workspace recovery, and cleanup, with a git-worktree fallback when jj is not usable."
     }
   ]
 }

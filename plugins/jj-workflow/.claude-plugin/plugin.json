@@ -1,0 +1,9 @@
+{
+  "name": "jj-workflow",
+  "version": "0.1.0",
+  "description": "Jujutsu (jj) skills for agents working in parallel: one workspace and one bookmark per slice of work, granular revisions for reviewable PRs, stacked dependent slices, stale-workspace recovery, and cleanup, with a git-worktree fallback when jj is not usable.",
+  "author": {
+    "name": "Pauline Vos",
+    "email": "pauline.vos@mongodb.com"
+  }
+}

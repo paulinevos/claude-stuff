@@ -30,6 +30,24 @@ PHP code conventions centred on object calisthenics.
 | --- | --- |
 | [`php-object-calisthenics`](plugins/php-style/skills/php-object-calisthenics/SKILL.md) | Writing, refactoring or reviewing PHP — small edits, bug fixes, tests and scripts included |
 
+### jj-workflow
+
+Jujutsu (jj) skills for several agents working in parallel on one repository:
+a workspace and a bookmark per slice, granular revisions, stacked dependent
+slices, stale-workspace recovery, and cleanup. Falls back to git worktrees when
+jj is not usable (no `.jj`, or submodules matter).
+
+| Skill | Use when |
+| --- | --- |
+| [`parallel-slices`](plugins/jj-workflow/skills/parallel-slices/SKILL.md) | Orchestrating: detect jj, slice the task, create a workspace per slice, dispatch and monitor workers |
+| [`work-in-slice`](plugins/jj-workflow/skills/work-in-slice/SKILL.md) | Working inside an assigned workspace: described revisions, bookmark on the tip, fold fixes in, hand off |
+| [`sync-workspace`](plugins/jj-workflow/skills/sync-workspace/SKILL.md) | "The working copy is stale", a moved base or parent slice, a divergent change, or a `??` bookmark |
+| [`finish-slices`](plugins/jj-workflow/skills/finish-slices/SKILL.md) | Verifying, pushing after approval, forgetting workspaces and deleting bookmarks |
+
+Shared conventions and the git-worktree fallback live in
+`plugins/jj-workflow/skills/parallel-slices/references/`, bundled with that
+skill so they travel on install. Workspaces go in `../<repo>.workspaces/<slice>`,
+never inside a working copy.
 **Install** — via `npx skills` (any supported agent):
 
 ```sh
