@@ -1,6 +1,6 @@
 ---
 name: parallel-slices
-description: "Coordinate several agents working in parallel on one repository with Jujutsu (jj) workspaces, as the orchestrator: detect whether this is a jj repo (and whether git submodules rule jj out), split the task into slices with explicit dependencies, create one workspace per slice in a sibling directory, dispatch a worker per slice with its bookmark name and base, monitor without interfering, and integrate at the end. Use when asked to parallelise implementation, fan out subagents or workers over a codebase, \"use jj workspaces\", \"one PR per slice\", \"stack these changes\", or when planning multi-agent work in a repo that has a .jj directory. Falls back to git worktrees when jj is not usable. Not for doing the work inside a slice (work-in-slice), repairing a stale or divergent workspace (sync-workspace), or pushing and cleaning up (finish-slices)."
+description: "Coordinate several agents working in parallel on one repository with Jujutsu (jj) workspaces, as the orchestrator: detect whether this is a jj repo (and whether git submodules rule jj out), split the task into slices with explicit dependencies, create one workspace per slice under the centralised ~/.jj-workspaces root, dispatch a worker per slice with its bookmark name and base, monitor without interfering, and integrate at the end. Use when asked to parallelise implementation, fan out subagents or workers over a codebase, \"use jj workspaces\", \"one PR per slice\", \"stack these changes\", or when planning multi-agent work in a repo that has a .jj directory. Falls back to git worktrees when jj is not usable. Not for doing the work inside a slice (work-in-slice), repairing a stale or divergent workspace (sync-workspace), or pushing and cleaning up (finish-slices)."
 ---
 
 # parallel-slices
@@ -45,10 +45,16 @@ files, testable on its own. For each slice record its name
 ```sh
 jj git fetch
 repo=$(basename "$(jj root)")
-mkdir -p "../$repo.workspaces"                       # jj does not create parent directories
-jj workspace add --name <slice> -r 'trunk()' --sparse-patterns full "../$repo.workspaces/<slice>"
+workspace_root="${HOME}/.jj-workspaces/${repo}"
+mkdir -p "$workspace_root"                           # jj does not create parent directories
+jj workspace add --name <slice> -r 'trunk()' --sparse-patterns full "$workspace_root/<slice>"
 jj workspace list
 ```
+
+All slice workspaces MUST live under `${HOME}/.jj-workspaces`, with a
+per-repository directory as shown. This gives every workspace the same
+permission boundary and keeps their locations centralised; never place them
+beside or inside a checkout.
 
 Each workspace starts with an empty `@` on top of its base. Do **not** create
 the slice bookmark yourself: a bookmark on an empty, undescribed change is

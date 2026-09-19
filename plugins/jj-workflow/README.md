@@ -11,7 +11,7 @@ lives in its own directory under `skills/` and loads on demand.
 | `parallel-slices` | Planning parallel work: detect jj (or fall back to git worktrees), split into slices with dependencies, create a workspace per slice, dispatch and monitor workers |
 | `work-in-slice` | You are a worker with a workspace path and a slice name: build described revisions, keep the bookmark on the tip, fold fixes in, hand off |
 | `sync-workspace` | "The working copy is stale", a base or parent slice moved, a `(divergent)` change, or a `??` bookmark |
-| `finish-slices` | Verifying, pushing (after approval), forgetting workspaces, deleting directories and bookmarks |
+| `finish-slices` | Verifying, pushing (after approval), then after a PR merges forgetting its workspace, deleting its directory and bookmark |
 
 `parallel-slices` is the orchestrator's entry point: it decides jj versus git,
 slices the task, and hands each worker a workspace. Workers follow
@@ -26,9 +26,11 @@ fallback in `references/git-fallback.md`. Both are bundled with that skill so
 they travel on install (including to non-Claude agents). The other skills
 inline the one or two rules they need, so each is self-contained.
 
-Workspaces are created in a sibling directory of the repository,
-`../<repo>.workspaces/<slice>`, never inside a working copy. Requires jj 0.43
-or later on `PATH`; verified against 0.43.
+Workspaces are created under `${HOME}/.jj-workspaces/<repo>/<slice>`, never
+inside a working copy. This centralises all workspace edit permissions. Once a
+slice's PR merges, its workspace is forgotten with `jj workspace forget` and
+its directory is removed. Requires jj 0.43 or later on `PATH`; verified
+against 0.43.
 
 ## Install
 
