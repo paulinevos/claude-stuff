@@ -35,9 +35,10 @@ slices, shaping revisions, or touching another agent's workspace. Keywords
 
 ## Layout and naming
 
-- Workspaces MUST live outside every working copy, in a sibling directory:
-  `../<repo>.workspaces/<slice>`. A workspace created inside the main working
-  copy is snapshotted as ordinary files.
+- Workspaces MUST live outside every working copy under the centralised path
+  `${HOME}/.jj-workspaces/<repo>/<slice>`. A workspace created inside the main
+  working copy is snapshotted as ordinary files. Keeping them under this one
+  root allows edit permissions to cover every workspace.
 - Create the parent directory first; `jj workspace add` does not create it.
 - Workspace name, bookmark name and slice name MUST be identical, in
   lowercase-kebab-case (`api-client`, `api-client-tests`).

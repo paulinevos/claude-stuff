@@ -1,6 +1,6 @@
 ---
 name: finish-slices
-description: "Publish and clean up after parallel slices in Jujutsu (jj) workspaces: verify each slice's revisions from the default workspace, push bookmarks parents-first only after explicit approval, forget the workspaces and delete their directories, and remove bookmarks once their pull requests merge. Use when workers have handed off, when asked to \"push the slices\", \"open PRs for the bookmarks\", \"clean up the jj workspaces\", \"forget the workspace\", \"the PR merged, tidy up\", or when jj workspace list shows leftovers from earlier runs. Not for planning (parallel-slices), work inside a slice (work-in-slice), or stale and divergent workspaces (sync-workspace)."
+description: "Publish and clean up after parallel slices in Jujutsu (jj) workspaces: verify each slice's revisions from the default workspace, push bookmarks parents-first only after explicit approval, then forget each workspace and delete its directory after its pull request merges. Use when workers have handed off, when asked to \"push the slices\", \"open PRs for the bookmarks\", \"clean up the jj workspaces\", \"forget the workspace\", \"the PR merged, tidy up\", or when jj workspace list shows leftovers from earlier runs. Not for planning (parallel-slices), work inside a slice (work-in-slice), or stale and divergent workspaces (sync-workspace)."
 ---
 
 # finish-slices
@@ -41,37 +41,35 @@ publish with consent, then remove what is no longer needed.
    `jj git fetch && jj rebase -b <child> -o trunk()`, push again, and retarget
    the PR to `main`.
 
-4. Forget the workspaces and delete their directories:
+4. Keep the slice workspaces until their pull requests merge. They remain the
+   workers' working copies while a PR may need follow-up changes.
 
-   ```sh
-   jj workspace forget <slice-a> <slice-b>
-   rm -rf ../<repo>.workspaces/<slice-a> ../<repo>.workspaces/<slice-b>
-   jj workspace list
-   ```
-
-   Forget by name from the default workspace: forgetting the workspace you are
-   standing in leaves you in a directory without a working copy. An empty
-   undescribed `@` is abandoned automatically. A non-empty `@` stays behind as
-   an anonymous head: squash it into the slice if it is finished work, or
-   `jj abandon <change-id>` if not. Bookmarks survive forgetting.
-
-5. After the pull requests merge:
+5. After the pull requests merge, forget each merged workspace and remove its
+   directory from the central workspace root:
 
    ```sh
    jj git fetch
    jj bookmark list
    jj bookmark delete <slice>                 # if the local bookmark is still there
    jj log -r 'heads(mutable()) ~ working_copies()'   # anonymous leftovers, usually none
+   jj workspace forget <slice>
+   rm -rf "${HOME}/.jj-workspaces/<repo>/<slice>"
+   jj workspace list
    ```
 
-   `delete` also removes the remote branch on the next push; use
-   `jj bookmark forget <slice>` instead if the forge already deleted it and
-   you only want the local name gone.
+   Forget by name from the default workspace: forgetting the workspace you are
+   standing in leaves you in a directory without a working copy. `jj forget`
+   only removes jj's workspace record, so ALWAYS follow it with the `rm -rf`
+   command above once the PR has merged. An empty undescribed `@` is abandoned
+   automatically. A non-empty `@` stays behind as an anonymous head: squash it
+   into the slice if it is finished work, or `jj abandon <change-id>` if not.
+   `delete` also removes the remote branch on the next push; use `jj bookmark
+   forget <slice>` instead if the forge already deleted it and you only want
+   the local name gone.
 
 ## Why cleanup is a separate step
 
 A forgotten workspace is just a directory; jj never deletes files for you, and
-it never removes a bookmark on its own. Leaving them around costs disk and,
-worse, invites the next run to reuse a stale workspace and inherit its `@`.
-Doing verification, publishing and removal in one pass keeps the repository in
-the same state the orchestrator found it in, plus the pushed bookmarks.
+it never removes a bookmark on its own. Once its PR merges, forgetting and
+removing the centralised workspace prevents a later run from reusing a stale
+workspace and inheriting its `@`.
