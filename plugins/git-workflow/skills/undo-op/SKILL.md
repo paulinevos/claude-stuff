@@ -1,35 +1,19 @@
 ---
 name: undo-op
-description: Recover the branch to its state before a git operation using the reflog. Use when the user wants to undo or reverse a merge, rebase, reset, amend, squash, or "bad" history rewrite, says "get my commits back", "I messed up the rebase", "revert to before I ran X", or fears they lost commits. This recovers via reflog, distinct from git revert (which makes a new inverse commit).
+description: Recover a branch to its state before a local merge, rebase, reset, amend, squash, or other history operation using the reflog; distinct from making a reverting commit.
 ---
 
 # undo-op
 
-Almost every history-changing operation is reversible because git records where
-each ref pointed before it moved, in the reflog. Undoing means finding the entry
-just before the operation and moving the branch back to it.
+1. Inspect `git reflog` (or `git reflog show <branch>`), find the requested
+   operation, and inspect the entry immediately before it with `git log` or
+   `git show HEAD@{N}`.
+2. Show that target to the user and confirm it is the desired state.
+3. If uncommitted work exists, stash it (`git stash -u`); never create a
+   checkpoint commit merely to clear the tree.
+4. Restore the affected branch with `git reset --hard HEAD@{N}`, then
+   `git stash pop` if needed.
 
-## Steps
-
-1. Inspect recent moves: `git reflog` (or `git reflog show [branch]`). Each line
-   shows a `HEAD@{N}` position and the operation that produced it (`rebase`,
-   `commit --amend`, `reset`, `merge`, …).
-2. Identify the entry that describes the operation the user wants to undo, then
-   look one entry *older* — that's the state to return to. Confirm by inspecting
-   it: `git log --oneline HEAD@{N}` and/or `git show HEAD@{N}`.
-3. Show the user that state and confirm it's the outcome they expect **before**
-   changing anything — the next step is destructive to the current tip.
-4. Restore: `git reset --hard HEAD@{N}` (run on the affected branch). The branch
-   now points where it did before the operation.
-
-## Why the reflog, not `git revert`
-
-`git revert` adds a new commit that inverts a change — appropriate for undoing a
-*published* commit. Here the goal is to rewind local history as if the operation
-never happened, which `reset --hard` to a reflog position does cleanly. Because
-reflog entries persist for a while, even a "lost" commit after a bad rebase is
-usually still recoverable this way.
-
-Caution: `reset --hard` discards uncommitted changes. If there are any, stash
-them first with `git stash` (`-u` to include untracked files), then
-`git stash pop` after the reset.
+Use `git revert` instead when undoing a published commit by adding a new inverse
+commit. Reflog recovery rewinds local history; `reset --hard` discards unstashed
+changes.
