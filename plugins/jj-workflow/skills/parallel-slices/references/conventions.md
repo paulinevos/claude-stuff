@@ -39,6 +39,8 @@ slices, shaping revisions, or touching another agent's workspace. Keywords
   `${HOME}/.jj-workspaces/<repo>/<slice>`. A workspace created inside the main
   working copy is snapshotted as ordinary files. Keeping them under this one
   root allows edit permissions to cover every workspace.
+- Before creating the first workspace, ask the user to grant edit permission
+  for `${HOME}/.jj-workspaces`; do not request permissions per workspace.
 - Create the parent directory first; `jj workspace add` does not create it.
 - Workspace name, bookmark name and slice name MUST be identical, in
   lowercase-kebab-case (`api-client`, `api-client-tests`).
