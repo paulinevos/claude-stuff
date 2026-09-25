@@ -1,0 +1,40 @@
+cases:
+  - name: locate-a-regression
+    skill: plugins/git-workflow/skills/bisect-debug
+    prompt: A checkout worked last Tuesday but fails now. Find the change that caused it and make the durable fix.
+    require: ['(bisect.*(run|automat)|automated.*bisect)', 'bisect reset', '(/tmp|temporary|outside)', 'regression test']
+  - name: fold-multiple-followups
+    skill: plugins/git-workflow/skills/maintain-atomic-commits
+    prompt: My dirty Foo.php has one correction for a commit three commits back and one for the latest commit. Keep history reviewable.
+    require: ['(fixup|fix-up)', 'autosquash', '(amend|latest)', '(shared|local|rewriteable)']
+  - name: resolve-rebase-conflict
+    skill: plugins/git-workflow/skills/resolve-merge-conflict
+    prompt: My rebase stopped with conflicts. Resolve them safely and tell me what ours and theirs mean here.
+    require: ['git status', '(stage|git add)', 'rebase.*continue', 'ours', 'theirs', '(confirm|authoriz)']
+  - name: recover-a-bad-rebase
+    skill: plugins/git-workflow/skills/undo-op
+    prompt: I rebased the wrong local branch and need it back. I also have uncommitted work.
+    require: ['reflog', '(stash|uncommitted)', '(reset --hard|restore)', 'confirm']
+  - name: coordinate-two-slices
+    skill: plugins/jj-workflow/skills/parallel-slices
+    extra_files:
+      - references/conventions.md
+      - references/git-fallback.md
+    prompt: Split an independent API change and its dependent tests between two workers in this Jujutsu repository.
+    require: ['trunk\(\)', '(parent|dependent)', 'workspace', 'bookmark', 'work-in-slice']
+  - name: hand-off-a-slice
+    skill: plugins/jj-workflow/skills/work-in-slice
+    prompt: I own a slice that adds a retry policy. Explain how to make two reviewable revisions and hand it off.
+    require: ['(describe|revision)', '(jj new|fresh empty)', 'bookmark', '(jj status|working copy)', '(do not push|without pushing)']
+  - name: recover-divergent-work
+    skill: plugins/jj-workflow/skills/sync-workspace
+    prompt: My Jujutsu working copy is stale and my edits disappeared after a parent rewrite; the log now shows /0 and /1.
+    require: ['(update-stale|update the stale)', 'divergent', '(squash|combine)', '(jj status|status)']
+  - name: publish-and-clean-a-slice
+    skill: plugins/jj-workflow/skills/finish-slices
+    prompt: The worker handed off a slice. Publish it and tell me how to clean up once its pull request merges.
+    require: ['(confirm|approval|authoriz)', '(push|publish)', 'forget.*workspace', '(rm -rf|remove.*directory)', 'merge']
+  - name: design-an-email-value
+    skill: plugins/php-style/skills/php-object-calisthenics
+    prompt: I need an email-address type in the domain layer. It must reject malformed input and be safe to share across the application. Explain its API and invariants.
+    require: ['strict.*typ', 'readonly', 'fromString', '(validat|malformed)', 'equals']

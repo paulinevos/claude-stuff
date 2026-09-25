@@ -1,0 +1,177 @@
+{
+  "revision": "ulvtkopm",
+  "results": [
+    {
+      "name": "locate-a-regression",
+      "skill": "plugins/git-workflow/skills/bisect-debug",
+      "required": [
+        "(bisect.*(run|automat)|automated.*bisect)",
+        "bisect reset",
+        "(/tmp|temporary|outside)",
+        "regression test"
+      ],
+      "matched": [
+        "(bisect.*(run|automat)|automated.*bisect)",
+        "bisect reset",
+        "(/tmp|temporary|outside)",
+        "regression test"
+      ],
+      "passed": true,
+      "response": "Following the `bisect-debug` skill:\n\n1. Reproduce the checkout failure with a reliable pass/fail command. Use an existing test or a temporary script outside the repository; confirm it fails at `HEAD`.\n2. Find a commit from last Tuesday and verify that the same check passes there.\n3. Run automated `git bisect run` between the verified good commit and `HEAD`, then use `git bisect reset` to restore the starting checkout.\n4. Inspect the first bad commit and explain precisely how its change caused the failure.\n5. Fix the underlying cause and add a permanent regression test. Verify the fix and relevant tests, then discard the temporary script.\n6. Make a fresh fix commit without rewriting shared history, using an imperative subject and a body explaining why the bug occurred."
+    },
+    {
+      "name": "fold-multiple-followups",
+      "skill": "plugins/git-workflow/skills/maintain-atomic-commits",
+      "required": [
+        "(fixup|fix-up)",
+        "autosquash",
+        "(amend|latest)",
+        "(shared|local|rewriteable)"
+      ],
+      "matched": [
+        "(fixup|fix-up)",
+        "autosquash",
+        "(amend|latest)",
+        "(shared|local|rewriteable)"
+      ],
+      "passed": true,
+      "response": "Using the maintain-atomic-commits skill. Its linked `references/conventions.md` is missing, so I could read only `SKILL.md`.\n\n1. Identify both target commits and verify that neither is already on a shared branch before rewriting.\n2. Split the dirty `Foo.php` changes by hunk. Record one fixup for the older commit and another for the original latest commit, using their recorded IDs.\n3. Review the two fixups to confirm each contains only its intended correction.\n4. Autosquash from the older target’s parent so both corrections fold into their respective commits. Resolve any replay conflicts.\n5. Check the resulting diff, run relevant tests, and verify that history retains separate, atomic commits with no leftover fixups."
+    },
+    {
+      "name": "resolve-rebase-conflict",
+      "skill": "plugins/git-workflow/skills/resolve-merge-conflict",
+      "required": [
+        "git status",
+        "(stage|git add)",
+        "rebase.*continue",
+        "ours",
+        "theirs",
+        "(confirm|authoriz)"
+      ],
+      "matched": [
+        "git status",
+        "(stage|git add)",
+        "ours",
+        "theirs",
+        "(confirm|authoriz)"
+      ],
+      "passed": false,
+      "response": "Following [SKILL.md](SKILL.md), which links no additional references:\n\n1. Inspect Git status, each conflicted file, and the commit being replayed.\n2. Reconcile both sides’ intended changes; inspect actual content before choosing either side wholesale.\n3. Review the proposed resolutions with you before staging—the skill says “get confirmation before staging.”\n4. Remove conflict markers, check the resulting diff, and run relevant tests.\n5. Stage resolved files and continue the rebase, repeating if further conflicts arise.\n\nDuring a **rebase**, **ours** is the branch you’re rebasing onto, including commits already replayed; **theirs** is your commit currently being replayed. These labels can feel reversed, so choosing “ours” does **not** necessarily preserve your original branch’s changes."
+    },
+    {
+      "name": "recover-a-bad-rebase",
+      "skill": "plugins/git-workflow/skills/undo-op",
+      "required": [
+        "reflog",
+        "(stash|uncommitted)",
+        "(reset --hard|restore)",
+        "confirm"
+      ],
+      "matched": [
+        "reflog",
+        "(stash|uncommitted)",
+        "(reset --hard|restore)",
+        "confirm"
+      ],
+      "passed": true,
+      "response": "Following [undo-op’s SKILL.md](SKILL.md), which links no additional references:\n\n1. Check the affected branch and whether the rebase is still running.\n2. Preserve uncommitted work, including untracked files, and save a backup reference to the current branch tip.\n3. Inspect the affected branch’s reflog to find its pre-rebase commit; verify its history and contents.\n4. Show you the proposed recovery point and confirm it matches your intent before resetting the branch.\n5. Restore the branch, then reapply the saved work. Resolve any conflicts and verify both the history and your edits before deleting backups."
+    },
+    {
+      "name": "coordinate-two-slices",
+      "skill": "plugins/jj-workflow/skills/parallel-slices",
+      "required": [
+        "trunk\\(\\)",
+        "(parent|dependent)",
+        "workspace",
+        "bookmark",
+        "work-in-slice"
+      ],
+      "matched": [
+        "trunk\\(\\)",
+        "(parent|dependent)",
+        "workspace",
+        "bookmark",
+        "work-in-slice"
+      ],
+      "passed": true,
+      "response": "I’ll apply the **parallel-slices** skill with this split:\n\n| Worker / slice | Base | Owned files | Done when |\n|---|---|---|---|\n| 1: `api-change` | `trunk()` | API implementation files | API builds and existing tests pass |\n| 2: `api-tests` | `api-change` | Dependent test files and fixtures | New API behavior is covered and relevant tests pass |\n\n1. Confirm Jujutsu status, colocation, and whether build/tests require submodules; use the Git fallback if necessary. Identify exact file ownership before creating workspaces.\n2. Fetch and create `api-change` under `${HOME}/.jj-workspaces/<repo>/api-change`. Worker 1 creates its bookmark on its first described revision.\n3. Prefer starting Worker 2 after Worker 1 hands off, creating its workspace under the same root from `api-change`. If they overlap, Worker 1 may append revisions but must not rewrite existing ancestors until Worker 2 hands off.\n4. Give each worker its workspace, bookmark, base, owned files, and completion criteria. Require `work-in-slice`, exclusive ownership, logical passing revisions, and no changes to another slice.\n5. Monitor from the default workspace using read-only revset inspection. Require conflict-free handoffs, described revisions, and bookmarks on the latest described revision beneath an empty scratch `@`.\n6. After both handoffs, re-parent the tests if needed and follow `finish-slices` for integration."
+    },
+    {
+      "name": "hand-off-a-slice",
+      "skill": "plugins/jj-workflow/skills/work-in-slice",
+      "required": [
+        "(describe|revision)",
+        "(jj new|fresh empty)",
+        "bookmark",
+        "(jj status|working copy)",
+        "(do not push|without pushing)"
+      ],
+      "matched": [
+        "(describe|revision)",
+        "(jj new|fresh empty)",
+        "bookmark",
+        "(jj status|working copy)",
+        "(do not push|without pushing)"
+      ],
+      "passed": true,
+      "response": "Using the `work-in-slice` skill in [SKILL.md](SKILL.md); no linked reference files are present.\n\n1. **Orient:** Confirm your workspace with `jj workspace root`. Inspect `@` and `@-`; `@` must be empty and directly on the intended base. Otherwise, stop and ask the orchestrator.\n2. **Revision one:** Add the retry policy and focused tests as a self-contained change. Build and test it, snapshot with `jj status`, and describe it as “Add retry policy,” with the reason in the description body. Run `jj new`, then create your slice bookmark at `@-`.\n3. **Revision two:** Integrate the policy into the client and add integration tests. Independently build and test this revision, snapshot, describe it as “Apply retry policy to HttpClient,” then run `jj new` and move the slice bookmark to `@-`.\n4. **Refine and sync:** Fold corrections into their owning revisions using change IDs and `jj squash --into` or `jj absorb`. If the base moves, fetch and rebase your slice; resolve conflicts where they arose. Rewrite only your own changes, and snapshot before pausing.\n5. **Hand off:** Verify a clean, empty working revision and no conflicts or undescribed revisions in the slice. Report the workspace path, bookmark, and both change IDs with subjects in oldest-first order. Do not push or forget the workspace."
+    },
+    {
+      "name": "recover-divergent-work",
+      "skill": "plugins/jj-workflow/skills/sync-workspace",
+      "required": [
+        "(update-stale|update the stale)",
+        "divergent",
+        "(squash|combine)",
+        "(jj status|status)"
+      ],
+      "matched": [
+        "(update-stale|update the stale)",
+        "divergent",
+        "(squash|combine)",
+        "(jj status|status)"
+      ],
+      "passed": true,
+      "response": "1. If the workspace is still stale, run `jj workspace update-stale`, then `jj status`. This snapshots pending edits before updating to the rewritten parent.\n2. Treat `/0` and `/1` as divergent versions of the same change. Inspect their commit IDs and file differences to locate the missing edits; use commit IDs to avoid ambiguity.\n3. To recover both versions’ work, run `jj squash --from <other-commit-id> --into @`, using the version holding the missing edits as the source.\n4. Verify with `jj log -r @` and `jj status`: divergence should be gone and the recovered files present.\n\nBefore pausing future work, run `jj status` to snapshot edits, and avoid rewriting parents used by another active workspace."
+    },
+    {
+      "name": "publish-and-clean-a-slice",
+      "skill": "plugins/jj-workflow/skills/finish-slices",
+      "required": [
+        "(confirm|approval|authoriz)",
+        "(push|publish)",
+        "forget.*workspace",
+        "(rm -rf|remove.*directory)",
+        "merge"
+      ],
+      "matched": [
+        "(push|publish)",
+        "forget.*workspace",
+        "(rm -rf|remove.*directory)",
+        "merge"
+      ],
+      "passed": false,
+      "response": "Using [finish-slices](SKILL.md), which links to no additional references:\n\n1. From the default workspace, verify the slice’s revisions: no conflicts, empty descriptions, or work left beyond its bookmark.\n2. Fetch and rebase if the base moved, then repeat verification.\n3. Show the revision list and publish order. The skill requires “wait for an explicit yes” before pushing. Push parents before children and open the PR with the appropriate base branch.\n4. Keep the worker’s workspace until its PR merges.\n5. After merge, fetch, remove the remaining local bookmark, and inspect anonymous revisions for unfinished work. From the default workspace, forget the merged workspace by name, delete its directory under `~/.jj-workspaces/<repo>/<slice>`, and verify the workspace list. Forgetting alone does not delete files."
+    },
+    {
+      "name": "design-an-email-value",
+      "skill": "plugins/php-style/skills/php-object-calisthenics",
+      "required": [
+        "strict.*typ",
+        "readonly",
+        "fromString",
+        "(validat|malformed)",
+        "equals"
+      ],
+      "matched": [
+        "strict.*typ",
+        "readonly",
+        "fromString",
+        "(validat|malformed)",
+        "equals"
+      ],
+      "passed": true,
+      "response": "1. Add a domain `EmailAddress` value object, `final` and `readonly`, using strict types and the repository’s supported PHP syntax.\n2. Expose `EmailAddress::fromString(string $value): self`. Keep the constructor private and validate there with `FILTER_VALIDATE_EMAIL`; reject invalid input by throwing `InvalidEmailAddress::forInput($value)`.\n3. Expose the validated string through a public readonly `$value` property. Provide no getters or setters.\n4. Provide `equals(self $other): bool` using exact string equality. Preserve input without implicit trimming or case normalization.\n5. Use `EmailAddress` in domain APIs instead of raw strings. Test valid construction, malformed-input rejection, and value equality through the public API.\n\n**Invariants:** every constructed instance contains a syntactically accepted email address, cannot change, and can safely be shared. Validation does not establish mailbox ownership or deliverability. Keep framework, HTTP, and persistence concerns outside the type."
+    }
+  ]
+}
