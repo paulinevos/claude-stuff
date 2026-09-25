@@ -15,7 +15,10 @@ them. Stop if neither jj nor git applies.
    base, owned files, and done criteria; show the table before creating
    anything. Independent slices base on `trunk()`; dependent slices base on the
    parent's bookmark. Avoid overlapping files.
-2. Create each workspace outside checkouts, always at
+2. Before creating a workspace, ask the user to grant edit permission for
+   `${HOME}/.jj-workspaces` and wait for that permission. Request the shared
+   root, not each slice directory, so workers are not prompted repeatedly.
+   Then create each workspace outside checkouts, always at
    `${HOME}/.jj-workspaces/<repo>/<slice>`:
 
    ```sh
