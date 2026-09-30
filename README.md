@@ -6,6 +6,11 @@ This is my mono-repo for assorted Claude stuff. Feel free to use.
 
 Installable via the `vos` marketplace (see `.claude-plugin/marketplace.json`).
 
+### amp-workflow
+
+[Amp CLI and usage monitoring](plugins/amp-workflow/README.md): launch orbs and
+threads with summarized context and receive credit, allowance, and thread-cap alerts.
+
 ### git-workflow
 
 Atomic-commit Git workflow skills, plus shared conventions.

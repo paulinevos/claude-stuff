@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "amp-workflow",
+  "version": "0.1.0",
+  "description": "Launch Amp threads with summarized context and monitor credits, allowance, and thread spending.",
+  "author": {
+    "name": "Pauline Vos"
+  }
+}

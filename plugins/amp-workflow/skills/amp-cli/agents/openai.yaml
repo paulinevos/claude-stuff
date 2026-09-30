@@ -1,0 +1,3 @@
+interface:
+  display_name: "Amp CLI"
+  short_description: "Launch and manage Amp threads and orbs"

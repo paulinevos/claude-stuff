@@ -24,6 +24,11 @@
       "name": "pr-reviewer",
       "source": "./plugins/pr-reviewer",
       "description": "Review-queue triage and PR review skills: find PRs awaiting your review, classify each to its local checkout and Solo project, dispatch a reviewer agent that follows that project's own guidelines, and collect planned review comments for approval before anything is posted."
+    },
+    {
+      "name": "amp-workflow",
+      "source": "./plugins/amp-workflow",
+      "description": "Launch Amp threads with summarized context and monitor credits, allowance, and thread spending."
     }
   ]
 }
