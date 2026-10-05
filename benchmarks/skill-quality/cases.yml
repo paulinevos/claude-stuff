@@ -24,6 +24,8 @@ cases:
     require: ['trunk\(\)', '(parent|dependent)', 'workspace', 'bookmark', 'work-in-slice']
   - name: hand-off-a-slice
     skill: plugins/jj-workflow/skills/work-in-slice
+    extra_files:
+      - references/jj-navi.md
     prompt: I own a slice that adds a retry policy. Explain how to make two reviewable revisions and hand it off.
     require: ['(describe|revision)', '(jj new|fresh empty)', 'bookmark', '(jj status|working copy)', '(do not push|without pushing)']
   - name: recover-divergent-work
