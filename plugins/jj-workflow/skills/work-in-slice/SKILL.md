@@ -1,6 +1,6 @@
 ---
 name: work-in-slice
-description: "Do one owned slice in a Jujutsu workspace: make granular described revisions, keep its bookmark at the tip, fold fixes into their revision, rebase safely, and hand off without publishing."
+description: "Do one owned slice in a Jujutsu workspace: make granular described revisions, keep its bookmark at the tip, fold fixes into their revision, rebase safely, navigate workspaces with jj-navi when it is installed, and hand off without publishing."
 ---
 
 # work-in-slice
@@ -42,3 +42,9 @@ there, never in another worker's directory.
 
 Never use `--ignore-immutable`. Snapshot with `jj status` before pausing;
 rewriting an active descendant's ancestor risks a divergent recovery.
+
+If `navi --version` succeeds, [jj-navi](references/jj-navi.md) can handle
+workspace navigation; `navi switch` and `navi doctor` are safe for a worker,
+while `navi list` and `navi merge` belong to the orchestrator. Offer the
+install when it is missing rather than running it. None of the steps above
+change.
