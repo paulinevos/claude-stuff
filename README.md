@@ -48,6 +48,25 @@ Shared conventions and the git-worktree fallback live in
 `plugins/jj-workflow/skills/parallel-slices/references/`, bundled with that
 skill so they travel on install. Workspaces go in `../<repo>.workspaces/<slice>`,
 never inside a working copy.
+
+### pr-reviewer
+
+Turns "PRs are waiting on my review" into reviews drafted by each project's own
+rules. Triage spawns one reviewer per PR inside that PR's Solo project; the
+reviewer plans comments and never posts them.
+
+| Skill | Use when |
+| --- | --- |
+| [`triage-review-queue`](plugins/pr-reviewer/skills/triage-review-queue/SKILL.md) | Finding what awaits your review, classifying it to a project, dispatching reviewers |
+| [`review-pull-request`](plugins/pr-reviewer/skills/review-pull-request/SKILL.md) | Reviewing one PR: project guidelines, docs parity, scope creep, planned comments |
+| [`collect-review-findings`](plugins/pr-reviewer/skills/collect-review-findings/SKILL.md) | Approving planned comments, then posting them |
+
+`/review-queue` runs the triage. Repo → checkout → Solo project mapping lives in
+`~/.claude/pr-reviewer/projects.json`; the format and the interactive
+gap-filling are in
+`plugins/pr-reviewer/skills/triage-review-queue/references/projects.md`.
+Requires the `gh` CLI and the Solo MCP server.
+
 **Install** — via `npx skills` (any supported agent):
 
 ```sh
