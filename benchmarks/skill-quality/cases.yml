@@ -32,6 +32,10 @@ cases:
     skill: plugins/jj-workflow/skills/sync-workspace
     prompt: My Jujutsu working copy is stale and my edits disappeared after a parent rewrite; the log now shows /0 and /1.
     require: ['(update-stale|update the stale)', 'divergent', '(squash|combine)', '(jj status|status)']
+  - name: clear-published-divergence
+    skill: plugins/jj-workflow/skills/sync-workspace
+    prompt: My Jujutsu log shows divergent changes I cannot squash or abandon because they are already pushed. Clear them.
+    require: ['immutable', '(jj diff|--stat|duplicat)', 'bookmark track', 'bookmark delete', '(push --deleted|--deleted)', '(confirm|approval|ask)']
   - name: publish-and-clean-a-slice
     skill: plugins/jj-workflow/skills/finish-slices
     prompt: The worker handed off a slice. Publish it and tell me how to clean up once its pull request merges.
