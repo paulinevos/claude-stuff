@@ -1,0 +1,235 @@
+{
+  "revision": "pr-reviewer",
+  "results": [
+    {
+      "name": "locate-a-regression",
+      "skill": "plugins/git-workflow/skills/bisect-debug",
+      "required": [
+        "(bisect.*(run|automat)|automated.*bisect)",
+        "bisect reset",
+        "(/tmp|temporary|outside)",
+        "regression test"
+      ],
+      "matched": [
+        "(bisect.*(run|automat)|automated.*bisect)",
+        "bisect reset",
+        "(/tmp|temporary|outside)"
+      ],
+      "passed": false,
+      "response": "**Action plan (per bisect-debug skill):**\n\n1. **Define pass/fail check** — Use the failing checkout step as the check, or write `/tmp/bisect-check.sh` (outside the repo) that exits 0 when checkout succeeds and non-zero when it fails.\n2. **Establish bounds** — Confirm current HEAD is bad, and identify/verify a commit from last Tuesday (or earlier) known to be good.\n3. **Run automated bisect**:\n   ```sh\n   git bisect start HEAD <good-commit>\n   git bisect run bash /tmp/bisect-check.sh\n   ```\n4. **Inspect the culprit** — `git show` on the reported first-bad commit to understand what changed and why it broke checkout.\n5. **Reset bisect state** — `git bisect reset`.\n6. **Write a durable fix** — New commit (not a rewrite of the culprit) that addresses the root cause, with an imperative message explaining why the regression happened.\n7. **Verify** — Re-run the pass/fail check (and any existing checkout tests) against the fix to confirm it passes.\n"
+    },
+    {
+      "name": "fold-multiple-followups",
+      "skill": "plugins/git-workflow/skills/maintain-atomic-commits",
+      "required": [
+        "(fixup|fix-up)",
+        "autosquash",
+        "(amend|latest)",
+        "(shared|local|rewriteable)"
+      ],
+      "matched": [
+        "(fixup|fix-up)",
+        "autosquash",
+        "(amend|latest)"
+      ],
+      "passed": false,
+      "response": "**Plan:**\n\n1. Split the dirty `Foo.php` changes with `git add -p Foo.php`, staging only the hunk(s) that fix the latest commit (HEAD).\n2. Commit those staged hunks: `git commit --amend --no-edit` (or with a message edit if wording also changed).\n3. Stage the remaining hunk(s) — the fix meant for the commit three back.\n4. Create a fixup commit targeting it: `git commit --fixup <that-commit-sha>`.\n5. Run `git rebase -i --autosquash <base>` (base = commit before the three-back target) to fold the fixup into place automatically.\n6. Before confirming, review the rebase todo list to verify the fixup is mapped to the correct target commit.\n7. Run the rebase; if replay conflicts occur on later commits, resolve them and continue — expected since earlier history changed.\n8. Verify with `git log --oneline <base>..HEAD` that history is clean (no stray fixup/amend commits) and `Foo.php` diff per commit looks correct.\n"
+    },
+    {
+      "name": "resolve-rebase-conflict",
+      "skill": "plugins/git-workflow/skills/resolve-merge-conflict",
+      "required": [
+        "git status",
+        "(stage|git add)",
+        "rebase.*continue",
+        "ours",
+        "theirs",
+        "(confirm|authoriz)"
+      ],
+      "matched": [
+        "git status",
+        "(stage|git add)",
+        "rebase.*continue",
+        "ours",
+        "theirs"
+      ],
+      "passed": false,
+      "response": "I don't have file-editing tools available in this session, so here's the plan directly:\n\n**Action plan to resolve your rebase conflicts:**\n\n1. Run `git status` to see every file with conflict markers.\n2. Open each conflicted file, inspect the `<<<<<<<`/`=======`/`>>>>>>>` markers, and resolve by combining both changes coherently — show me the proposed resolution before staging, rather than blindly picking a side.\n3. If you want to take one side wholesale instead, use `git checkout --ours <file>` or `git checkout --theirs <file>`.\n4. Remove the conflict markers, then `git add` each resolved file.\n5. Run `git rebase --continue` (repeat for any further conflicting commits).\n\n**What `ours`/`theirs` mean during a rebase** (this trips people up because it's the *opposite* of a merge): `ours` is the branch you're rebasing **onto** (the target/upstream), and `theirs` is the commit currently being **replayed** from your original branch. Don't rely on the labels alone — inspect the actual content of each side before deciding how to resolve.\n"
+    },
+    {
+      "name": "recover-a-bad-rebase",
+      "skill": "plugins/git-workflow/skills/undo-op",
+      "required": [
+        "reflog",
+        "(stash|uncommitted)",
+        "(reset --hard|restore)",
+        "confirm"
+      ],
+      "matched": [
+        "reflog",
+        "(stash|uncommitted)",
+        "(reset --hard|restore)",
+        "confirm"
+      ],
+      "passed": true,
+      "response": "Based on the `undo-op` skill, here's the plan to recover your branch:\n\n1. **Stash uncommitted work first** — run `git stash -u` to safely set aside your current changes (don't commit a throwaway checkpoint).\n2. **Inspect the reflog** — run `git reflog show <branch>` to find the entry right before the rebase started (look for the \"rebase\" action markers).\n3. **Verify the target** — run `git log` or `git show HEAD@{N}` on that pre-rebase entry to confirm it's the state you want back.\n4. **Reset the branch** — once confirmed, run `git reset --hard HEAD@{N}` to restore the branch to that point.\n5. **Restore your work** — run `git stash pop` to bring back your uncommitted changes on top of the recovered branch.\n\nNote: this uses `git reset --hard` (reflog recovery), not `git revert` — appropriate since the rebase was local/unpublished.\n"
+    },
+    {
+      "name": "coordinate-two-slices",
+      "skill": "plugins/jj-workflow/skills/parallel-slices",
+      "required": [
+        "trunk\\(\\)",
+        "(parent|dependent)",
+        "workspace",
+        "bookmark",
+        "work-in-slice"
+      ],
+      "matched": [
+        "trunk\\(\\)",
+        "(parent|dependent)",
+        "workspace",
+        "bookmark"
+      ],
+      "passed": false,
+      "response": "Based on the parallel-slices skill, here's the plan:\n\n**Workflow: jj (not git fallback — repo is jj-native per this request)**\n\n**1. Slices**\n\n| Slice | Base | Owns | Done when |\n|---|---|---|---|\n| `api-change` | `trunk()` | API implementation files | API change builds, passes its own tests, bookmark `api-change` described |\n| `api-change-tests` | `api-change` (dependent) | test files exercising the new API | Tests pass against `api-change`'s tip, bookmark `api-change-tests` described |\n\n(Exact file ownership needs to be filled in once we know the actual repo — ask which files the API change touches so the test slice can be scoped to non-overlapping test files.)\n\n**2. Setup**\n- Ask user to grant edit permission on `${HOME}/.jj-workspaces` (once, for the root, not per-slice).\n- `jj git fetch`\n- Create `api-change` workspace at `${HOME}/.jj-workspaces/<repo>/api-change` with `-r 'trunk()'`.\n- Do **not** create `api-change-tests` yet — its base (`api-change` bookmark) doesn't exist until the first worker describes a revision there.\n\n**3. Dispatch**\n- Worker A gets `api-change`: workspace path, bookmark `api-change`, base `trunk()`, owned files, and must produce granular, described revisions before hand-off.\n- Once Worker A has at least one described revision and the `api-change` bookmark exists, create the `api-change-tests` workspace with `-r api-change` and dispatch Worker B with base `api-change-tests`'s parent = `api-change` bookmark.\n- Worker B may rely on Worker A continuing to add revisions at the tip of `api-change`, but must not rebase/rewrite `api-change` itself — only the orchestrator does that from the default workspace if `api-change` grows and `api-change-tests` needs rebasing onto the new tip.\n\n**4. Monitor**\n- From the default workspace only, via revsets: `jj log -r 'api-change@'`, `jj log -r 'trunk()..api-change-tests'` — never run mutating/plain commands inside either worker's directory.\n\n**5. Integration**\n- After both hand off: use `finish-slices` to review, rebase `api-change-tests` onto any final `api-change` growth, then push `api-change` first, followed by `api-change-tests` (open its PR against `api-change`'s branch, retarget to `main` once `api-change` merges).\n\nSince this environment has no file-write tool available and plan mode ordinarily requires writing to a plan file, I'm presenting the plan directly in text instead. Let me know if you'd like me to proceed with any part of this once tooling is available, or if you want to specify the actual files each slice should own.\n"
+    },
+    {
+      "name": "hand-off-a-slice",
+      "skill": "plugins/jj-workflow/skills/work-in-slice",
+      "required": [
+        "(describe|revision)",
+        "(jj new|fresh empty)",
+        "bookmark",
+        "(jj status|working copy)",
+        "(do not push|without pushing)"
+      ],
+      "matched": [
+        "(describe|revision)",
+        "(jj new|fresh empty)",
+        "bookmark",
+        "(jj status|working copy)",
+        "(do not push|without pushing)"
+      ],
+      "passed": true,
+      "response": "Action plan for the retry-policy slice:\n\n1. **Confirm starting state** — run `jj workspace root` and `jj log -r '@ | @-' --no-graph -T '...'` to verify `@` is an empty change on your assigned base before doing anything.\n\n2. **First revision (core retry logic)**\n   - `jj status` to see current changes.\n   - `jj describe -m 'Add retry policy to HttpClient'` to describe the current change with the core implementation.\n   - `jj new` to open a fresh empty change on top.\n   - `jj bookmark create <slice> -r @-` to create the slice bookmark pointing at this first revision (only done once, here).\n\n3. **Second revision (e.g. config/tests/wiring)**\n   - Make the second logically distinct piece of work (configuration knobs, tests, call-site integration — whatever is separable from the core logic).\n   - `jj describe -m '<imperative subject>'` for this change.\n   - `jj new` to move to a fresh empty change.\n   - `jj bookmark move <slice> --to @-` to advance the bookmark to this new tip.\n\n4. **Fix-ups along the way** — if you spot a bug in revision 1 while working on revision 2, don't stack a third \"fix\" revision: edit it in place and `jj squash --into <change-id of revision 1>` (or `jj absorb` if it's a line-based fix an ancestor owns). Use `jj split` if a revision turns out to bundle two concerns, and `jj rebase -r ... -B ...` if ordering needs adjusting.\n\n5. **Before hand-off**\n   - Leave `@` empty (don't describe the final placeholder change).\n   - `jj status` to confirm no stray edits.\n   - Verify both revisions are described, conflict-free, and each passes independently.\n   - Report: workspace path, bookmark name, and the ordered list of the two revisions (change IDs + descriptions) to the orchestrator. Do not push.\n"
+    },
+    {
+      "name": "recover-divergent-work",
+      "skill": "plugins/jj-workflow/skills/sync-workspace",
+      "required": [
+        "(update-stale|update the stale)",
+        "divergent",
+        "(squash|combine)",
+        "(jj status|status)"
+      ],
+      "matched": [
+        "(update-stale|update the stale)",
+        "divergent",
+        "(squash|combine)",
+        "(jj status|status)"
+      ],
+      "passed": true,
+      "response": "This request is a direct operational task answerable straight from SKILL.md — it doesn't need codebase exploration or a plan file, so I'll just give the action plan.\n\n**Action plan:**\n\n1. `jj workspace update-stale` — snapshot/recover the stale working copy, then `jj status` to see current state.\n2. Since `@` is divergent (showing `change/0` and `change/1` after the parent rewrite), inspect both versions to see which holds your missing edits:\n   - `jj log -r 'change_id'` or show each commit's diff/content.\n3. Resolve the divergence:\n   - If one version has your real edits and the other is stale/empty: `jj squash --from <other-commit-id> --into @` to combine, then abandon the unwanted duplicate.\n   - If both versions have edits worth keeping: `jj metaedit --update-change-id <commit-id>` on one to give it a distinct change ID, preserving both as separate changes.\n4. Verify: `jj log -r @` to confirm a single clean change, and `jj status` to confirm no stale/conflict markers remain.\n"
+    },
+    {
+      "name": "publish-and-clean-a-slice",
+      "skill": "plugins/jj-workflow/skills/finish-slices",
+      "required": [
+        "(confirm|approval|authoriz)",
+        "(push|publish)",
+        "forget.*workspace",
+        "(rm -rf|remove.*directory)",
+        "merge"
+      ],
+      "matched": [
+        "(confirm|approval|authoriz)",
+        "(push|publish)",
+        "forget.*workspace",
+        "(rm -rf|remove.*directory)",
+        "merge"
+      ],
+      "passed": true,
+      "response": "I don't have access to the Write or ExitPlanMode tools in this session, so here's the plan as text directly.\n\n## Context\nThe worker handed off a completed slice. Before publishing, `finish-slices` requires verifying the slice's revisions are described, conflict-free, and fully reachable from its bookmark. Cleanup (forgetting the workspace, deleting the bookmark, removing the centralised directory) only happens after the PR merges.\n\n## 1. Verify the slice (from the default workspace)\n```sh\njj log -r '<base>..<slice>' --no-graph --reversed -T 'change_id.short() ++ \" \" ++ description.first_line() ++ \"\\n\"'\njj log -r '(<base>..<slice>) & (conflicts() | description(exact:\"\"))'\njj log -r '(<slice>:: ~ <slice>) ~ working_copies() ~ ::(bookmarks() ~ <slice>)'\n```\n- 1st: revision list in push order — show to the user.\n- 2nd: must be empty — otherwise fix conflicts/missing descriptions first.\n- 3rd: must be empty — otherwise something's unreachable from the bookmark; fix only if mechanical and the worker is finished.\n\nIf a check fails, fetch and rebase onto `trunk()` (or the child onto its parent, if stacked), then re-run all three.\n\n## 2. Publish\n- Show the per-slice revision list and push order (parent-first if stacked).\n- Wait for explicit approval.\n- On approval: `jj git push --bookmark <slice>`.\n\n## 3. Cleanup once the PR merges\n```sh\njj git fetch\njj bookmark delete <slice>       # or `jj bookmark forget` if the forge removed it\njj workspace forget <slice>\nrm -rf \"${HOME}/.jj-workspaces/<repo>/<slice>\"\njj workspace list\n```\n- Run `jj workspace forget` from the default workspace, never from the workspace being forgotten.\n- `jj workspace forget` only clears jj's record — the `rm -rf` is still required.\n- Keep the workspace until the PR merges, in case it needs changes.\n- If a child slice stacks on this one: once merged, rebase and push the child, then retarget it to `main`.\n- After cleanup, check `jj workspace list` — reconcile or abandon any leftover non-empty anonymous head.\n"
+    },
+    {
+      "name": "triage-waiting-reviews",
+      "skill": "plugins/pr-reviewer/skills/triage-review-queue",
+      "required": [
+        "review-requested",
+        "(classif|map|checkout)",
+        "(spawn|dispatch|agent)",
+        "(choose|pick|confirm|approv)",
+        "(not post|never post|without posting)"
+      ],
+      "matched": [
+        "review-requested",
+        "(classif|map|checkout)",
+        "(spawn|dispatch|agent)",
+        "(choose|pick|confirm|approv)",
+        "(not post|never post|without posting)"
+      ],
+      "passed": true,
+      "response": "I'm unable to write the plan file — the Write tool is disabled in this session, so I can't persist the plan as instructed. Here's the plan as text instead:\n\n**Plan: Triage review queue and dispatch reviewers**\n\n1. **List the queue** — `gh search prs --review-requested=@me --state=open --sort=updated --json repository,number,title,url,author,isDraft --limit 50`, skipping drafts. Stop with \"nothing waiting\" if empty.\n2. **Classify each PR** against `~/.claude/pr-reviewer/projects.json` by `owner/name`. For unmapped repos, resolve per `references/projects.md`: find the checkout via `list_projects` + `git remote get-url origin`, detect guideline files present, propose a config entry, and get user approval before adding — never guess a path or clone unasked.\n3. **Show a triage table** (PR, title, author, project, unmapped flag) and let the user pick which PRs to actually review.\n4. **Dispatch one reviewer agent per chosen PR** into that PR's Solo project: resolve `agent_tool_id` via `list_agent_tools`, `spawn_agent`, then `send_input` with the returned `agent_instructions` prepended, plus PR URL/number/repo/checkout path, the project's guideline files, instruction to follow the `review-pull-request` skill, and the scratchpad name `review-<repo-name>-<number>`. One PR per agent, never doubled up.\n5. **Monitor** via `get_process_status`/`get_process_output`, only intervening if a reviewer asks a question or stalls.\n6. **Collect results** — when a reviewer reports done, read its scratchpad and hand findings to `collect-review-findings` (reviewers never post or push themselves). Close each process after collection.\n\nWant me to proceed with step 1 (listing the queue) once you exit plan mode, or would you like me to try again to save this to the plan file?\n"
+    },
+    {
+      "name": "review-one-pull-request",
+      "skill": "plugins/pr-reviewer/skills/review-pull-request",
+      "required": [
+        "(guideline|AGENTS|CONTRIBUTING)",
+        "(doc|parity|stale)",
+        "(scope|issue)",
+        "(blocking|severity)",
+        "(not post|never post|plan)"
+      ],
+      "matched": [
+        "(guideline|AGENTS|CONTRIBUTING)",
+        "(doc|parity|stale)",
+        "(scope|issue)",
+        "(blocking|severity)",
+        "(not post|never post|plan)"
+      ],
+      "passed": true,
+      "response": "I don't have tool access in this session (no `gh`, no file/checkout access), so here's the action plan I'd follow per `review-pull-request`, ready to execute once tooling is available:\n\n1. **Gather the PR**: `gh pr view 3621 --repo <owner/name> --json title,body,author,isDraft,baseRefName,additions,deletions,changedFiles,closingIssuesReferences` and `gh pr diff 3621 --repo <owner/name>`. Checkout locally only if something needs running.\n2. **Read the project's own guidelines first** (CONTRIBUTING.md / style docs / linked conventions) — these override my own instincts; anything that conflicts with them gets dropped as a finding.\n3. **Review the diff against those guidelines**, checking sibling files/tests for the established convention each changed file should match.\n4. **Check docs parity**: search docs for anything this PR's behavior/API/defaults touch; flag any doc left describing old behavior, or new public surface left undocumented, naming the stale doc file.\n5. **Check for scope creep**: read the issue(s) in `closingIssuesReferences` (or named in the body) and its discussion; map every changed file back to the issue's stated problem. Unexplained files become *question*-severity findings (\"why does this belong?\"), not assertions.\n6. **Draft findings** in the `review-standards.md` shape — one `##` per comment with file:line, severity (blocking/should-fix/question), the guideline/test/defect it rests on, and comment text written as I'd post it to the author. Group repeated should-fix issues into one comment.\n7. **Write the scratchpad** with the PR summary + verdict (blocking/should-fix counts, recommendation — omitted if draft), and stop there: no posting, no approving, no pushing, no fixing.\n\nTo actually run this I need either tool access restored or the PR diff/issue text pasted in — let me know which you'd prefer.\n"
+    },
+    {
+      "name": "approve-and-post-comments",
+      "skill": "plugins/pr-reviewer/skills/collect-review-findings",
+      "required": [
+        "(approv|confirm)",
+        "(scratchpad|findings)",
+        "(gh api|pulls/.*comments|reviews)",
+        "(drop|edit|keep)",
+        "(COMMENT|APPROVE|REQUEST_CHANGES|event)"
+      ],
+      "matched": [
+        "(approv|confirm)",
+        "(scratchpad|findings)",
+        "(gh api|pulls/.*comments|reviews)",
+        "(drop|edit|keep)",
+        "(COMMENT|APPROVE|REQUEST_CHANGES|event)"
+      ],
+      "passed": true,
+      "response": "Action plan to get the reviewer's findings onto the PR, per the `collect-review-findings` skill:\n\n1. **Locate findings** – Open the reviewer's scratchpad `review-<repo-name>-<number>` for the PR in question (one PR at a time if multiple reviewers finished).\n2. **Present for approval** – Show every finding in full (file, line, severity, rationale, and the exact comment text to be posted), blocking findings first, and state clearly if there are none. Do not paraphrase the comment bodies — the user approves the literal text.\n3. **Get explicit decisions** – Ask the user to keep/drop/edit each finding, and confirm the review type: plain comment, approval, or changes requested. Don't infer this from severity.\n4. **Post only approved items**:\n   - Get head SHA: `gh pr view <n> --json headRefOid`\n   - Submit as one review via `POST repos/<owner>/<repo>/pulls/<n>/reviews` with a `comments` array and the chosen `event` (COMMENT/APPROVE/REQUEST_CHANGES), or post individually via `gh api repos/<owner>/<repo>/pulls/<n>/comments`.\n   - Any comment whose line isn't in the diff gets posted as a PR-level comment instead.\n5. **Report back** – Summarize what was posted vs. dropped, with the PR URL, and stop — no re-reviewing or replying to the author without a fresh approval.\n\nNothing gets posted without the user's explicit per-PR approval in this run.\n"
+    },
+    {
+      "name": "design-an-email-value",
+      "skill": "plugins/php-style/skills/php-object-calisthenics",
+      "required": [
+        "strict.*typ",
+        "readonly",
+        "fromString",
+        "(validat|malformed)",
+        "equals"
+      ],
+      "matched": [
+        "strict.*typ",
+        "readonly",
+        "fromString",
+        "(validat|malformed)",
+        "equals"
+      ],
+      "passed": true,
+      "response": "## Action plan: `EmailAddress` value object\n\n**Location & setup**\n- Add `EmailAddress` under the domain layer (e.g. `src/Domain/.../EmailAddress.php`).\n- `declare(strict_types=1);` at the top; class is `final readonly`.\n\n**Construction**\n- No public constructor exposed for arbitrary use — use a named constructor `EmailAddress::fromString(string $value): self`.\n- Validation happens inside the named constructor:\n  - Reject empty/whitespace-only input.\n  - Validate format (e.g. `filter_var($value, FILTER_VALIDATE_EMAIL)` as a baseline, optionally stricter RFC-5322-ish regex if the domain needs it).\n  - Normalize lightly if desired (trim; decide explicitly whether to lowercase — document the choice since email local-parts are technically case-sensitive).\n  - On failure, throw a domain-specific exception, e.g. `InvalidEmailAddress::forValue($value)`, with its own named constructor.\n\n**Invariants**\n- Once constructed, the wrapped string is always a syntactically valid email address — no invalid state can exist after construction.\n- Immutable: single private/promoted `readonly` property (e.g. `string $value`), no setters.\n\n**API surface**\n- `fromString(string $value): self` — named constructor, the only entry point.\n- `equals(EmailAddress $other): bool` — value-based comparison.\n- `toString(): string` (or `__toString()`) — for presentation/logging/persistence boundaries only; prefer passing the object itself between domain collaborators rather than unwrapping early.\n- Optionally `domainPart(): string` / `localPart(): string` if the domain actually needs these — don't add getters speculatively.\n\n**Safety for sharing across the app**\n- Being `final readonly` with validation only in the constructor guarantees any instance in circulation is valid — downstream code never needs to re-validate or defensively copy it.\n- Keep it dependency-free (no framework/ORM types) so it can cross layer boundaries (HTTP, persistence, domain) without coupling.\n\n**Tests**\n- Sentence-style test names: \"rejects malformed address\", \"equals compares by value\", \"fromString trims whitespace\", etc.\n- Table-test a set of valid/invalid examples rather than one-off asserts.\n"
+    }
+  ]
+}
