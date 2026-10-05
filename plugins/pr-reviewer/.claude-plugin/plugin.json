@@ -1,0 +1,9 @@
+{
+  "name": "pr-reviewer",
+  "version": "0.1.0",
+  "description": "Review-queue triage and PR review skills: find PRs awaiting your review, classify each to its local checkout and Solo project, dispatch a reviewer agent that follows that project's own guidelines, and collect planned review comments for approval before anything is posted.",
+  "author": {
+    "name": "Pauline Vos",
+    "email": "pauline.vos@mongodb.com"
+  }
+}

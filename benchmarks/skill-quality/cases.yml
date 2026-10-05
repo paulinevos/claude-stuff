@@ -36,6 +36,22 @@ cases:
     skill: plugins/jj-workflow/skills/finish-slices
     prompt: The worker handed off a slice. Publish it and tell me how to clean up once its pull request merges.
     require: ['(confirm|approval|authoriz)', '(push|publish)', 'forget.*workspace', '(rm -rf|remove.*directory)', 'merge']
+  - name: triage-waiting-reviews
+    skill: plugins/pr-reviewer/skills/triage-review-queue
+    extra_files:
+      - references/projects.md
+    prompt: Several pull requests are waiting on my review across different repositories. Get reviews started on the ones I care about.
+    require: ['review-requested', '(classif|map|checkout)', '(spawn|dispatch|agent)', '(choose|pick|confirm|approv)', '(not post|never post|without posting)']
+  - name: review-one-pull-request
+    skill: plugins/pr-reviewer/skills/review-pull-request
+    extra_files:
+      - references/review-standards.md
+    prompt: Review pull request 3621 against this project and draft the comments you would leave.
+    require: ['(guideline|AGENTS|CONTRIBUTING)', '(doc|parity|stale)', '(scope|issue)', '(blocking|severity)', '(not post|never post|plan)']
+  - name: approve-and-post-comments
+    skill: plugins/pr-reviewer/skills/collect-review-findings
+    prompt: The reviewer finished and wrote up its findings. Get those comments onto the pull request.
+    require: ['(approv|confirm)', '(scratchpad|findings)', '(gh api|pulls/.*comments|reviews)', '(drop|edit|keep)', '(COMMENT|APPROVE|REQUEST_CHANGES|event)']
   - name: design-an-email-value
     skill: plugins/php-style/skills/php-object-calisthenics
     prompt: I need an email-address type in the domain layer. It must reject malformed input and be safe to share across the application. Explain its API and invariants.

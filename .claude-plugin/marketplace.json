@@ -19,6 +19,11 @@
       "name": "jj-workflow",
       "source": "./plugins/jj-workflow",
       "description": "Jujutsu (jj) skills for agents working in parallel: one workspace and one bookmark per slice of work, granular revisions for reviewable PRs, stacked dependent slices, stale-workspace recovery, and cleanup, with a git-worktree fallback when jj is not usable."
+    },
+    {
+      "name": "pr-reviewer",
+      "source": "./plugins/pr-reviewer",
+      "description": "Review-queue triage and PR review skills: find PRs awaiting your review, classify each to its local checkout and Solo project, dispatch a reviewer agent that follows that project's own guidelines, and collect planned review comments for approval before anything is posted."
     }
   ]
 }
