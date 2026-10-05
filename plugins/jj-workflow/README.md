@@ -32,6 +32,16 @@ slice's PR merges, its workspace is forgotten with `jj workspace forget` and
 its directory is removed. Requires jj 0.43 or later on `PATH`; verified
 against 0.43.
 
+[`jj-navi`](https://github.com/eersnington/jj-navi) is supported but optional:
+`work-in-slice` detects it, offers the install when it is missing, and works
+on plain `jj` either way. When it is installed it handles workspace paths,
+switching, inventory and cleanup; point it at the layout above by setting
+`workspace_template` in `.jj/repo/navi/config.toml`. Its
+`skills/work-in-slice/references/jj-navi.md` covers which commands a worker
+may run and which belong to the orchestrator — notably that `navi list`
+snapshots every workspace and `navi merge` duplicates revisions rather than
+stacking them.
+
 ## Install
 
 ### Via `npx skills` (any supported agent)
